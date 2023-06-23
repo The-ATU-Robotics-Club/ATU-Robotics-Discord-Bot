@@ -1,17 +1,15 @@
 import discord
 from discord.ext import commands
-import random
+import json
 
-description = '''An example bot to showcase the discord.ext.commands extension
-module.
-
-There are a number of utility commands being showcased here.'''
+description = '''This bot is intended for the ATU Robotic's Discord server 
+    and automates several tasks such as managing the order form and time sheet.'''
 
 intents = discord.Intents.default()
-intents.members = True
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='?', description=description, intents=intents)
+bot = commands.Bot(command_prefix='?',
+                   description=description, intents=intents)
 
 
 @bot.event
@@ -24,25 +22,6 @@ async def on_ready():
 async def add(ctx, left: int, right: int):
     """Adds two numbers together."""
     await ctx.send(left + right)
-
-
-@bot.command()
-async def roll(ctx, dice: str):
-    """Rolls a dice in NdN format."""
-    try:
-        rolls, limit = map(int, dice.split('d'))
-    except Exception:
-        await ctx.send('Format has to be in NdN!')
-        return
-
-    result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
-    await ctx.send(result)
-
-
-@bot.command(description='For when you wanna settle the score some other way')
-async def choose(ctx, *choices: str):
-    """Chooses between multiple choices."""
-    await ctx.send(random.choice(choices))
 
 
 @bot.command()
@@ -72,7 +51,8 @@ async def cool(ctx):
 async def _bot(ctx):
     """Is the bot cool?"""
     await ctx.send('Yes, the bot is cool.')
-client = MyClient(intents=intents)
+
+
 with open("config.json", 'r') as config:
     data = json.load(config)
-    client.run(data["token"])
+    bot.run(data["token"])
