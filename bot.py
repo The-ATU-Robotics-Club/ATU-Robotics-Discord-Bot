@@ -26,12 +26,17 @@ db_cursor = db_connect.cursor()
 
 @bot.event
 async def on_ready():
-    print("Bot is ready.")
     try:
         synced = await bot.tree.sync()
         print(f"Synced {len(synced)} command(s).")
+        print("Bot is ready.")
     except Exception as e:
         print(e)
+
+
+def is_admin():
+    return app_commands.check(lambda interaction : 
+                              "Admin" in interaction.user.roles)
 
 
 @bot.tree.command(name="insertorder")
@@ -68,7 +73,7 @@ async def getorders(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="clearorders")
-@commands.has_role("Admin")
+@is_admin()
 async def clearorders(interaction: discord.Interaction):
     db_cursor.execute("TRUNCATE ORDER_FORM")
     db_connect.commit()
