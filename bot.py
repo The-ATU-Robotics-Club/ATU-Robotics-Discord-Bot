@@ -39,6 +39,15 @@ def modify_db(command, params = None):
     db_cursor.close()
     db_connect.close()
 
+def query_db(command, params = None):
+    db_connect = connector.connect(**db_config)
+    db_cursor = db_connect.cursor()
+    db_cursor.execute(command, params)
+    response = db_cursor.fetchall()
+    db_cursor.close()
+    db_connect.close()
+    return response
+
 
 @bot.event
 async def on_ready():
@@ -50,8 +59,7 @@ async def on_ready():
         print(e)
 
 
-@bot.tree.command(name = "insert-order", 
-                  description = "Inserts an order into the order form.")
+@bot.tree.command(description = "Inserts an order into the order form.")
 async def insertorder(interaction: discord.Interaction, 
                       name: str, 
                       quantity: int, 
@@ -63,37 +71,29 @@ async def insertorder(interaction: discord.Interaction,
     await interaction.response.send_message(f"Inserted ({name}, {quantity}, {website}, {type.name}) into order form!")
 
 
-@bot.tree.command(name = "remove-order", 
-                  description = "Removes an order from the order form based on its ID.")
+@bot.tree.command(description = "Removes an order from the order form based on its ID.")
 async def removeorder(interaction: discord.Interaction, 
                       id: int):
     modify_db("DELETE FROM ORDER_FORM WHERE ID = %s", (id, ))
     await interaction.response.send_message(f"Order #{id} removed!")
 
 
-@bot.tree.command(name = "get-order-form", 
-                  description = "Gives a CSV file of the order form.")
+@bot.tree.command(description = "Gives a CSV file of the order form.")
 async def getorders(interaction: discord.Interaction):
-    db_connect = connector.connect(**db_config)
-    db_cursor = db_connect.cursor()
-    db_cursor.execute("SELECT Name, Quantity, Website, Type FROM ORDER_FORM")
-    query = db_cursor.fetchall()
+    response = query_db("SELECT * FROM ORDER_FORM")
     filename = "order_form.csv"
     with open(filename, 'w') as file:
         csvFile = csv.writer(file)
-        csvFile.writerow(["Name", "Quantity", "Website", "Type"])
-        csvFile.writerows(query)
+        csvFile.writerow(["ID", "Name", "Quantity", "Website", "Type"])
+        csvFile.writerows(response)
     await interaction.response.send_message(file=discord.File(filename))
     os.remove(filename)
-    db_cursor.close()
-    db_connect.close()
 
 
-@bot.tree.command(name= "clear-order-form", 
-                  description = "Clears all data from the order form if the user is an Admin.")
+@bot.tree.command(description = "Clears all data from the order form if the user is an Admin.")
 @app_commands.checks.has_role("Admin")
 async def clearorders(interaction: discord.Interaction):
-    modify_db.execute("TRUNCATE ORDER_FORM")
+    modify_db("TRUNCATE ORDER_FORM")
     await interaction.response.send_message("Orders cleared!")
 
 
