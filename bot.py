@@ -1,12 +1,14 @@
 import discord
 from discord.ext import commands
 import json
+import csv
 from mysql import connector
+import os
 
 intents = discord.Intents.default()
 intents.message_content = True
-
 bot = commands.Bot(command_prefix='/', intents=intents)
+
 
 config = {}
 with open("config.json", 'r') as configFile:
@@ -21,37 +23,33 @@ db_connect = connector.connect(
         )
 db_cursor = db_connect.cursor()
 
-@bot.command()
-async def repeat(ctx, times: int, content='repeating...'):
-    """Repeats a message multiple times."""
-    for i in range(times):
-        await ctx.send(content)
-
 
 @bot.command()
-async def joined(ctx, member: discord.Member):
-    """Says when a member joined."""
-    await ctx.send(f'{member.name} joined {discord.utils.format_dt(member.joined_at)}')
+async def insertOrder(ctx, name, quantity, website, type):
+    # Inserts the new order into the form, NULL for ID to automatically increment.
+    db_cursor.execute("INSERT INTO ORDER_FORM (ID, Name, Quantity, Website, Type) VALUES (NULL, %s, %s, %s, %s);",
+                      (name, quantity, website, type))
+    db_connect.commit()
+    await ctx.send(f"Inserted ({name}, {quantity}, {website}, {type}) into order form!")
 
-
-@bot.group()
-async def cool(ctx):
-    """Says if a user is cool.
-
-    In reality this just checks if a subcommand is being invoked.
-    """
-    if ctx.invoked_subcommand is None:
-        await ctx.send(f'No, {ctx.subcommand_passed} is not cool')
 
 @bot.command()
-async def insert(ctx, name, quantity, type):
-    
+async def getForm(ctx):
+    db_cursor.execute("SELECT NAME, QUANTITY, WEBSITE, TYPE FROM ORDER_FORM;")
+    query = db_cursor.fetchall()
+    filename = "order_form.csv"
+    with open(filename, 'w') as file:
+        csvFile = csv.writer(file)
+        csvFile.writerows(query)
+    await ctx.send(file=discord.File(filename))
+    os.remove(filename)
 
 
-@cool.command(name='bot')
-async def _bot(ctx):
-    """Is the bot cool?"""
-    await ctx.send('Yes, the bot is cool.')
+@bot.command()
+@commands.has_role("Admin")
+async def clearForm(ctx):
+    db_cursor.execute("TRUNCATE ORDER_FORM;")
+    db_connect.commit()
 
 
 bot.run(config["token"])
