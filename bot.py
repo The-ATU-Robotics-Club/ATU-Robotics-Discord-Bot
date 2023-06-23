@@ -8,7 +8,7 @@ description = '''This bot is intended for the ATU Robotic's Discord server
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='?',
+bot = commands.Bot(command_prefix='/',
                    description=description, intents=intents)
 
 
