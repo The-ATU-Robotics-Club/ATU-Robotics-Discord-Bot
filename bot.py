@@ -1,28 +1,25 @@
 import discord
 from discord.ext import commands
 import json
-
-description = '''This bot is intended for the ATU Robotic's Discord server 
-    and automates several tasks such as managing the order form and time sheet.'''
+from mysql import connector
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='/',
-                   description=description, intents=intents)
+bot = commands.Bot(command_prefix='/', intents=intents)
 
+config = {}
+with open("config.json", 'r') as configFile:
+    config = json.load(configFile)
 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    print('------')
-
-
-@bot.command()
-async def add(ctx, left: int, right: int):
-    """Adds two numbers together."""
-    await ctx.send(left + right)
-
+db_connect = connector.connect(
+            host = config["db_host"],
+            user = config["db_user"],
+            password = config["db_pass"],
+            database = config["db_name"],
+            port = config["db_port"]
+        )
+db_cursor = db_connect.cursor()
 
 @bot.command()
 async def repeat(ctx, times: int, content='repeating...'):
@@ -46,6 +43,10 @@ async def cool(ctx):
     if ctx.invoked_subcommand is None:
         await ctx.send(f'No, {ctx.subcommand_passed} is not cool')
 
+@bot.command()
+async def insert(ctx, name, quantity, type):
+    
+
 
 @cool.command(name='bot')
 async def _bot(ctx):
@@ -53,6 +54,4 @@ async def _bot(ctx):
     await ctx.send('Yes, the bot is cool.')
 
 
-with open("config.json", 'r') as config:
-    data = json.load(config)
-    bot.run(data["token"])
+bot.run(config["token"])
