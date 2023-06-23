@@ -27,7 +27,7 @@ db_cursor = db_connect.cursor()
 @bot.command()
 async def insertOrder(ctx, name, quantity, website, type):
     # Inserts the new order into the form, NULL for ID to automatically increment.
-    db_cursor.execute("INSERT INTO ORDER_FORM (ID, Name, Quantity, Website, Type) VALUES (NULL, %s, %s, %s, %s);",
+    db_cursor.execute("INSERT INTO ORDER_FORM (ID, Name, Quantity, Website, Type) VALUES (NULL, %s, %s, %s, %s, )",
                       (name, quantity, website, type))
     db_connect.commit()
     await ctx.send(f"Inserted ({name}, {quantity}, {website}, {type}) into order form!")
@@ -35,14 +35,14 @@ async def insertOrder(ctx, name, quantity, website, type):
 
 @bot.command()
 async def removeOrder(ctx, id):
-    db_cursor.execute("DELETE FROM ORDER_FORM WHERE ID = %s;", (id))
+    db_cursor.execute("DELETE FROM ORDER_FORM WHERE ID = %s", (id, ))
     db_connect.commit()
     await ctx.send(f"Order #{id} removed!")
 
 
 @bot.command()
 async def getOrderForm(ctx):
-    db_cursor.execute("SELECT NAME, QUANTITY, WEBSITE, TYPE FROM ORDER_FORM;")
+    db_cursor.execute("SELECT * FROM ORDER_FORM")
     query = db_cursor.fetchall()
     filename = "order_form.csv"
     with open(filename, 'w') as file:
@@ -55,7 +55,7 @@ async def getOrderForm(ctx):
 @bot.command()
 @commands.has_role("Admin")
 async def clearOrderForm(ctx):
-    db_cursor.execute("TRUNCATE ORDER_FORM;")
+    db_cursor.execute("TRUNCATE ORDER_FORM")
     db_connect.commit()
 
 
