@@ -34,7 +34,14 @@ async def insertOrder(ctx, name, quantity, website, type):
 
 
 @bot.command()
-async def getForm(ctx):
+async def removeOrder(ctx, id):
+    db_cursor.execute("DELETE FROM ORDER_FORM WHERE ID = %s;", (id))
+    db_connect.commit()
+    await ctx.send(f"Order #{id} removed!")
+
+
+@bot.command()
+async def getOrderForm(ctx):
     db_cursor.execute("SELECT NAME, QUANTITY, WEBSITE, TYPE FROM ORDER_FORM;")
     query = db_cursor.fetchall()
     filename = "order_form.csv"
@@ -47,7 +54,7 @@ async def getForm(ctx):
 
 @bot.command()
 @commands.has_role("Admin")
-async def clearForm(ctx):
+async def clearOrderForm(ctx):
     db_cursor.execute("TRUNCATE ORDER_FORM;")
     db_connect.commit()
 
