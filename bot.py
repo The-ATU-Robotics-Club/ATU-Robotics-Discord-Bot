@@ -47,13 +47,6 @@ def query_db(command, params = None):
     db_cursor.close()
     db_connect.close()
     return response
-
-def modify_hours_db(id, hours):
-    response = query_db("SELECT HOURS FROM TIME_SHEET WHERE ID = %s", (id, ))
-    if not response:
-        modify_db("INSERT INTO TIME_SHEET (ID, Hours) VALUES (%s, %s)", (id, hours, ))
-    hours = max(0, response[0][0] + hours)
-    modify_db("UPDATE TIME_SHEET SET Hours = %s WHERE ID = %s", (hours, id, ))
     
 
 @bot.event
@@ -66,13 +59,13 @@ async def on_ready():
         print(e)
 
 
-@bot.tree.command(description = "Inserts an order into the order form.")
-async def insertorder(interaction: discord.Interaction, 
+@bot.tree.command(description = "Adds an order into the order form.")
+async def addorder(interaction: discord.Interaction, 
                       name: str, 
                       quantity: int, 
                       website: str, 
                       type: Type):
-    # Inserts the new order into the form, NULL for ID to automatically increment.
+    # Adds the new order into the form, NULL for ID to automatically increment.
     modify_db("INSERT INTO ORDER_FORM (ID, Name, Quantity, Website, Type) VALUES (NULL, %s, %s, %s, %s)",
               (name, quantity, website, type.name, ))
     await interaction.response.send_message(f"Inserted ({name}, {quantity}, {website}, {type.name}) into order form!")
@@ -86,7 +79,7 @@ async def removeorder(interaction: discord.Interaction,
 
 
 @bot.tree.command(description = "Gives a CSV file of the order form.")
-async def getorders(interaction: discord.Interaction):
+async def getorderform(interaction: discord.Interaction):
     response = query_db("SELECT * FROM ORDER_FORM")
     filename = "order_form.csv"
     with open(filename, 'w') as file:
@@ -99,7 +92,7 @@ async def getorders(interaction: discord.Interaction):
 
 @bot.tree.command(description = "Clears all data from the order form if the user is an Admin.")
 @app_commands.checks.has_role("Admin")
-async def clearorders(interaction: discord.Interaction):
+async def clearorderform(interaction: discord.Interaction):
     modify_db("TRUNCATE ORDER_FORM")
     await interaction.response.send_message("Orders cleared!")
 
@@ -109,20 +102,21 @@ async def gethours(interaction: discord.Interaction,
                   user: discord.User = None):
     if not user:
         user = interaction.user
-    response = query_db("SELECT HOURS FROM TIME_SHEET WHERE ID = %s", (user.id, ))
+    response = query_db("SELECT Hours FROM TIME_SHEET WHERE ID = %s", (user.id, ))
     hours = 0 if not response else response[0][0]
     await interaction.response.send_message(f"User {user.name} has contributed {hours} hours.")
 
 
 @bot.tree.command(description = "Changes work hours to the caller or user given.")
-async def modifyhours(interaction: discord.Interaction,
+async def changehours(interaction: discord.Interaction,
                       hours: int,
                       user: discord.User = None):
     if not user:
         user = interaction.user
-    response = query_db("SELECT HOURS FROM TIME_SHEET WHERE ID = %s", (user.id, ))
+    response = query_db("SELECT Hours FROM TIME_SHEET WHERE ID = %s", (user.id, ))
     if not response:
-        modify_db("INSERT INTO TIME_SHEET (ID, Hours) VALUES (%s, %s, %s)", (user.id, user.name, 0, ))
+        modify_db("INSERT INTO TIME_SHEET (ID, Name, Hours) VALUES (%s, %s, %s)", (user.id, user.name, 0, ))
+        response = [(0,)]
     hours = max(0, response[0][0] + hours)
     modify_db("UPDATE TIME_SHEET SET Hours = %s WHERE ID = %s", (hours, user.id, ))
     await interaction.response.send_message(f"Set {user.name}'s hours to {hours} hours.")
@@ -130,11 +124,11 @@ async def modifyhours(interaction: discord.Interaction,
 
 @bot.tree.command(description = "Gives a CSV file of the time sheet.")
 async def gettimesheet(interaction: discord.Interaction):
-    response = query_db("SELECT * FROM TIME_SHEET")
+    response = query_db("SELECT Name, Hours FROM TIME_SHEET")
     filename = "time_sheet.csv"
     with open(filename, 'w') as file:
         csvFile = csv.writer(file)
-        csvFile.writerow(["ID", "Name", "Hours"])
+        csvFile.writerow(["Name", "Hours"])
         csvFile.writerows(response)
     await interaction.response.send_message(file=discord.File(filename))
     os.remove(filename)
@@ -143,8 +137,6 @@ async def gettimesheet(interaction: discord.Interaction):
 @bot.tree.command(description = "Clears all data from the time sheet if the user is an Admin.")
 @app_commands.checks.has_role("Admin")
 async def cleartimesheet(interaction: discord.Interaction):
-    if not user:
-        user = interaction.user
     modify_db("TRUNCATE TIME_SHEET")
     await interaction.response.send_message("Time sheet cleared!")
 
