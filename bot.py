@@ -61,7 +61,7 @@ async def addorder(interaction: discord.Interaction,
                    name: str,
                    website: str,
                    quantity: int,
-                   unitprice: float):
+                   unitprice: float = commands.parameter(description="Unit price will be rounded up to in-part account for taxes and shipping.")):
     # Adds the new order into the form, NULL for ID to automatically increment.
     unitprice = math.ceil(unitprice)
     totalprice = quantity * unitprice
@@ -92,7 +92,8 @@ async def getorderform(interaction: discord.Interaction):
 
 @bot.tree.command(description="Gives the total cost of the order.")
 async def gettotal(interaction: discord.Interaction):
-    await interaction.response.send_message("Not implemented!")
+    response = query_db("SELECT PriceTotal FROM ORDER_FORM")
+    await interaction.response.send_message(f"Order Form Total Price: ${sum(response)}")
 
 
 @bot.tree.command(description="Clears all data from the order form if the user is an Admin.")
