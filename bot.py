@@ -61,13 +61,13 @@ async def addorder(interaction: discord.Interaction,
                    name: str,
                    website: str,
                    quantity: int,
-                   unitPrice: float):
+                   unitprice: float):
     # Adds the new order into the form, NULL for ID to automatically increment.
-    unitPrice = math.ceil(unitPrice)
-    totalPrice = quantity * unitPrice
+    unitprice = math.ceil(unitprice)
+    totalprice = quantity * unitprice
     modify_db("INSERT INTO ORDER_FORM (ID, Name, Website, Quantity, UnitPrice, TotalPrice) VALUES (NULL, %s, %s, %s, %s, %s)",
-              (name, website, quantity, unitPrice, totalPrice, ))
-    await interaction.response.send_message(f"Inserted ({name}, {website}, {quantity}, {unitPrice}, {totalPrice}) into order form!")
+              (name, website, quantity, unitprice, totalprice, ))
+    await interaction.response.send_message(f"Inserted ({name}, {website}, {quantity}, {unitprice}, {totalprice}) into order form!")
 
 
 @bot.tree.command(description="Removes an order from the order form based on its ID.")
