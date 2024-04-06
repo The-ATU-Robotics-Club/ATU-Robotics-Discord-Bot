@@ -93,8 +93,9 @@ async def getorderform(interaction: discord.Interaction):
 
 @bot.tree.command(description="Gives the total cost of the order.")
 async def gettotal(interaction: discord.Interaction):
-    response = zip(*query_db("SELECT TotalPrice FROM ORDER_FORM"))
-    await interaction.response.send_message(f"Order Form Total Price: ${sum(response)}")
+    responses = zip(*query_db("SELECT TotalPrice FROM ORDER_FORM"))
+    prices = [response["TotalPrice"] for response in responses]
+    await interaction.response.send_message(f"Order Form Total Price: ${sum(prices)}")
 
 
 @bot.tree.command(description="Clears all data from the order form if the user is an Admin.")
