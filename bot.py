@@ -57,11 +57,12 @@ async def on_ready():
 
 
 @bot.tree.command(description="Adds an order into the order form.")
+@bot.tree.describe(unitprice = "Unit price will be rounded up to in-part account for taxes and shipping.")
 async def addorder(interaction: discord.Interaction,
                    name: str,
                    website: str,
                    quantity: int,
-                   unitprice: float = commands.parameter(description="Unit price will be rounded up to in-part account for taxes and shipping.")):
+                   unitprice: float):
     # Adds the new order into the form, NULL for ID to automatically increment.
     unitprice = math.ceil(unitprice)
     totalprice = quantity * unitprice
