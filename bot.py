@@ -57,7 +57,7 @@ async def on_ready():
 
 
 @bot.tree.command(description="Adds an order into the order form.")
-@bot.tree.describe(unitprice = "Unit price will be rounded up to in-part account for taxes and shipping.")
+@app_commands.describe(unitprice = "Unit price will be rounded up to in-part account for taxes and shipping.")
 async def addorder(interaction: discord.Interaction,
                    name: str,
                    website: str,
