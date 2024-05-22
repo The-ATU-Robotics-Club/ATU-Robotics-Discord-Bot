@@ -69,7 +69,7 @@ async def addorder(interaction: discord.Interaction,
         name (str): The name of the item to be ordered.
         website (str): The website where it can be found.
         quantity (int): How many to order.
-        unitprice (float): How much one costs (will be rounded up to account for taxes/shipping/fees).
+        unitprice (float): How much one costs (approximately).
     """
     # Adds the new order into the form, NULL for ID to automatically increment.
     unitprice = math.ceil(unitprice)
@@ -110,9 +110,9 @@ async def getorderform(interaction: discord.Interaction):
     os.remove(filename)
 
 
-@bot.tree.command(description="Gives the total cost of the order.")
+@bot.tree.command(description="Gives the total approximated cost of the order.")
 async def gettotal(interaction: discord.Interaction):
-    """Gets the total price of the order form. 
+    """Gets the total approximated price of the order form. 
 
     Args:
         interaction (discord.Interaction): Discord context.
