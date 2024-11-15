@@ -72,7 +72,7 @@ async def addorder(interaction: discord.Interaction,
         unitprice (float): How much one costs (approximately).
     """
     # Adds the new order into the form, NULL for ID to automatically increment.
-    unitprice = math.ceil(unitprice)
+    unitprice = unitprice
     totalprice = quantity * unitprice
     modify_db("INSERT INTO ORDER_FORM (ID, Name, Website, Quantity, UnitPrice, TotalPrice) VALUES (NULL, %s, %s, %s, %s, %s)",
               (name, website, quantity, unitprice, totalprice, ))
